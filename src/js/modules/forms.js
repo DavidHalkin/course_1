@@ -1,17 +1,13 @@
-const forms = () => {
+import checkNumInputs from './checkNumInputs';
+const forms = (state) => {
 	const form = document.querySelectorAll('form'),
-		inputs = document.querySelectorAll('input'),
-		phoneInputs = document.querySelectorAll('input[name="user_phone"]');
+		inputs = document.querySelectorAll('input');
 
-	phoneInputs.forEach(item => {
-		item.addEventListener('input', () => {
-			item.value = item.value.replace(/\D/, '');
-		});
-	});
+	checkNumInputs('input[name="user_phone"]');
 
 	const message = {
 		loading: 'Загрузка...',
-		success: 'Спасибо! Скоро с вами свяжутся',
+		success: 'Спасибо! Скоро мы с вами свяжемся',
 		failure: 'Что-то пошло не так...'
 	};
 
@@ -21,6 +17,7 @@ const forms = () => {
 			method: "POST",
 			body: data
 		});
+
 		return await res.text();
 	};
 
@@ -29,7 +26,6 @@ const forms = () => {
 			item.value = '';
 		});
 	};
-
 
 	form.forEach(item => {
 		item.addEventListener('submit', (e) => {
@@ -40,6 +36,11 @@ const forms = () => {
 			item.appendChild(statusMessage);
 
 			const formData = new FormData(item);
+			if (item.getAttribute('data-calc') === "end") {
+				for (let key in state) {
+					formData.append(key, state[key]);
+				}
+			}
 
 			postData('assets/server.php', formData)
 				.then(res => {
@@ -51,7 +52,20 @@ const forms = () => {
 					clearInputs();
 					setTimeout(() => {
 						statusMessage.remove();
-					}, 3000);
+					}, 5000);
+
+
+					if (item.getAttribute('data-calc') === "end") {
+						setTimeout(() => {
+							const modals = document.querySelectorAll('[data-modal]');
+							modals.forEach(element => {
+								element.style.display = 'none';
+							});
+							document.body.style.overflow = '';
+						}, 6000);
+					}
+
+					// state = {};
 				});
 		});
 	});
